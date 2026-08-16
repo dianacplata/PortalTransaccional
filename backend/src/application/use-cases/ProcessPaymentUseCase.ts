@@ -12,7 +12,7 @@ import { ProcessPaymentDto } from '../dto/ProcessPaymentDto';
 export interface ProcessPaymentResult {
   transactionId: string;
   status: TransactionStatus;
-  wompiTransactionId: string;
+  payTransactionId: string;
   reference: string;
 }
 
@@ -67,7 +67,7 @@ export class ProcessPaymentUseCase {
       return err(new PaymentException('Payment processing failed: ' + String(e)));
     }
 
-    transaction.assignWompiId(paymentResult.wompiTransactionId);
+    transaction.assignPayId(paymentResult.payTransactionId);
     transaction.updateStatus(paymentResult.status);
     await this.transactionRepo.update(transaction);
 
@@ -78,7 +78,7 @@ export class ProcessPaymentUseCase {
     return ok({
       transactionId: transaction.id,
       status: transaction.status,
-      wompiTransactionId: paymentResult.wompiTransactionId,
+      payTransactionId: paymentResult.payTransactionId,
       reference: transaction.reference,
     });
   }

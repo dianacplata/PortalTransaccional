@@ -17,7 +17,7 @@ export interface CreateTransactionParams {
 
 export class Transaction {
   private _status: TransactionStatus;
-  private _wompiTransactionId: string | null;
+  private _payTransactionId: string | null;
 
   private constructor(
     public readonly id: string,
@@ -30,12 +30,12 @@ export class Transaction {
     private readonly _deliveryFee: Money,
     public readonly reference: string,
     status: TransactionStatus,
-    wompiTransactionId: string | null,
+    payTransactionId: string | null,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) {
     this._status = status;
-    this._wompiTransactionId = wompiTransactionId;
+    this._payTransactionId = payTransactionId;
   }
 
   /** Factory: solo se puede crear en estado PENDING */
@@ -69,14 +69,14 @@ export class Transaction {
     deliveryFee: Money,
     reference: string,
     status: TransactionStatus,
-    wompiTransactionId: string | null,
+    payTransactionId: string | null,
     createdAt: Date,
     updatedAt: Date,
   ): Transaction {
     return new Transaction(
       id, productId, customerId, deliveryId, quantity,
       productAmount, baseFee, deliveryFee, reference,
-      status, wompiTransactionId, createdAt, updatedAt,
+      status, payTransactionId, createdAt, updatedAt,
     );
   }
 
@@ -84,8 +84,8 @@ export class Transaction {
     return this._status;
   }
 
-  get wompiTransactionId(): string | null {
-    return this._wompiTransactionId;
+  get payTransactionId(): string | null {
+    return this._payTransactionId;
   }
 
   get totalAmount(): Money {
@@ -100,8 +100,8 @@ export class Transaction {
     return isCompleted(this._status);
   }
 
-  assignWompiId(wompiId: string): void {
-    this._wompiTransactionId = wompiId;
+  assignPayId(payId: string): void {
+    this._payTransactionId = payId;
   }
 
   updateStatus(newStatus: TransactionStatus): void {
