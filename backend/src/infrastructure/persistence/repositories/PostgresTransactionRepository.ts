@@ -18,6 +18,11 @@ export class PostgresTransactionRepository implements ITransactionRepository {
     return row ? this.toDomain(row) : null;
   }
 
+  async findByReference(reference: string): Promise<Transaction | null> {
+    const row = await this.repo.findOne({ where: { reference } });
+    return row ? this.toDomain(row) : null;
+  }
+
   async save(transaction: Transaction): Promise<Transaction> {
     const saved = await this.repo.save(this.toEntity(transaction));
     return this.toDomain(saved);

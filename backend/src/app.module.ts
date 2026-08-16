@@ -1,16 +1,18 @@
-﻿import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { ProductEntity } from './infrastructure/persistence/entities/ProductEntity';
 import { CustomerEntity } from './infrastructure/persistence/entities/CustomerEntity';
 import { TransactionEntity } from './infrastructure/persistence/entities/TransactionEntity';
 import { DeliveryEntity } from './infrastructure/persistence/entities/DeliveryEntity';
-import { PersistenceModule } from './infrastructure/PersistenceModule';
-import { PayModule } from './infrastructure/PayModule';
+import { ApiModule } from './infrastructure/http/ApiModule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+
     // Fix 1: explicit entity array — no glob (glob misses PascalCase filenames)
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -26,8 +28,15 @@ import { PayModule } from './infrastructure/PayModule';
           : false,
       }),
     }),
-    PersistenceModule,
-    PayModule,
+
+    // Global rate limiting: 30 requests per minute
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 30 }]),
+
+    ApiModule,
+  ],
+  providers: [
+    // Apply ThrottlerGuard globally; individual endpoints can override with @Throttle()
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}
