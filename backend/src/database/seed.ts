@@ -64,7 +64,7 @@ async function seed(): Promise<void> {
   const existing = await repo.count();
 
   if (existing > 0) {
-    console.log(Seed skipped —  products already exist.);
+    console.log(`Seed skipped — ${existing} products already exist.`);
     await AppDataSource.destroy();
     return;
   }
@@ -72,7 +72,7 @@ async function seed(): Promise<void> {
   for (const data of PRODUCTS) {
     const product = repo.create({ id: uuidv4(), ...data });
     await repo.save(product);
-    console.log(  + );
+    console.log(`  ✓ ${data.name}`);
   }
 
   console.log('Seed complete: 5 products inserted.');

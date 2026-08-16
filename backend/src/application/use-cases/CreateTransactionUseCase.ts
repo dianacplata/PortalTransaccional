@@ -52,7 +52,7 @@ export class CreateTransactionUseCase {
     const baseFee = Money.of(this.baseFeeCents);
     const deliveryFee = Money.of(this.deliveryFeeCents);
     const now = new Date();
-    const reference = REF-+${Date.now()}-;
+    const reference = `REF-${Date.now()}-${uuidv4().slice(0, 8)}`;
 
     const transaction = Transaction.createPending({
       id: uuidv4(),
