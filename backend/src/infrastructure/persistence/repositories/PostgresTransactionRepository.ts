@@ -40,7 +40,7 @@ export class PostgresTransactionRepository implements ITransactionRepository {
       Money.of(row.deliveryFeeCents),
       row.reference,
       row.status,
-      row.wompiTransactionId,
+      row.payTransactionId,
       row.createdAt,
       row.updatedAt,
     );
@@ -58,7 +58,7 @@ export class PostgresTransactionRepository implements ITransactionRepository {
     e.deliveryFeeCents = tx.deliveryFee.cents;
     e.reference = tx.reference;
     e.status = tx.status;
-    e.wompiTransactionId = tx.wompiTransactionId;
+    e.payTransactionId = tx.payTransactionId;
     e.createdAt = tx.createdAt;
     e.updatedAt = tx.updatedAt;
     return e;

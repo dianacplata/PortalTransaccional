@@ -6,6 +6,7 @@ import { CustomerEntity } from './infrastructure/persistence/entities/CustomerEn
 import { TransactionEntity } from './infrastructure/persistence/entities/TransactionEntity';
 import { DeliveryEntity } from './infrastructure/persistence/entities/DeliveryEntity';
 import { PersistenceModule } from './infrastructure/PersistenceModule';
+import { PayModule } from './infrastructure/PayModule';
 
 @Module({
   imports: [
@@ -19,12 +20,14 @@ import { PersistenceModule } from './infrastructure/PersistenceModule';
         url: cfg.get<string>('DATABASE_URL'),
         entities: [ProductEntity, CustomerEntity, TransactionEntity, DeliveryEntity],
         synchronize: cfg.get<string>('NODE_ENV') === 'development',
+        logging: cfg.get<string>('NODE_ENV') === 'development',
         ssl: cfg.get<string>('NODE_ENV') === 'production'
           ? { rejectUnauthorized: false }
           : false,
       }),
     }),
     PersistenceModule,
+    PayModule,
   ],
 })
 export class AppModule {}

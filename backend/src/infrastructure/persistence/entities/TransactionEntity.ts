@@ -41,8 +41,8 @@ export class TransactionEntity {
   status: TransactionStatus;
 
   // Fix 2: explicit varchar nullable to avoid DataTypeNotSupportedError
-  @Column({ name: 'wompi_transaction_id', type: 'varchar', nullable: true })
-  wompiTransactionId: string | null;
+  @Column({ name: 'pay_transaction_id', type: 'varchar', nullable: true })
+  payTransactionId: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

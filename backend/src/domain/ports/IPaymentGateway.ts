@@ -27,7 +27,7 @@ export interface PaymentRequest {
 }
 
 export interface PaymentResult {
-  wompiTransactionId: string;
+  payTransactionId: string;
   status: TransactionStatus;
   reference: string;
 }
@@ -35,5 +35,5 @@ export interface PaymentResult {
 export interface IPaymentGateway {
   tokenizeCard(card: CardTokenRequest): Promise<CardToken>;
   createPayment(request: PaymentRequest): Promise<PaymentResult>;
-  getTransactionStatus(wompiTransactionId: string): Promise<TransactionStatus>;
+  getTransactionStatus(payTransactionId: string): Promise<TransactionStatus>;
 }
