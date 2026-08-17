@@ -9,7 +9,15 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
   // Security headers (OWASP)
-  app.use(helmet());
+  // CSP relajada en desarrollo para permitir Swagger UI (inline scripts/styles)
+  app.use(
+    helmet({
+      contentSecurityPolicy:
+        process.env.NODE_ENV === 'production'
+          ? undefined
+          : false,
+    }),
+  );
 
   // CORS — allow only the configured frontend origin
   const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173';
