@@ -9,7 +9,15 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
   // Security headers (OWASP)
-  app.use(helmet());
+  // CSP relajada en desarrollo para permitir Swagger UI (inline scripts/styles)
+  app.use(
+    helmet({
+      contentSecurityPolicy:
+        process.env.NODE_ENV === 'production'
+          ? undefined
+          : false,
+    }),
+  );
 
   // CORS — allow only the configured frontend origin
   const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173';
@@ -28,12 +36,16 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalFilters(new DomainExceptionFilter());
 
+  const port = process.env.PORT ?? 3000;
+  const serverUrl = process.env.SERVER_URL ?? `http://localhost:${port}`;
+
   // Swagger — only in non-production environments
   if (process.env.NODE_ENV !== 'production') {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Portal Transaccional API')
       .setDescription('REST API para el portal de pagos — sandbox Wompi')
       .setVersion('1.0')
+      .addServer(serverUrl, 'Servidor activo')
       .addTag('products')
       .addTag('transactions')
       .addTag('webhooks')
@@ -43,7 +55,6 @@ async function bootstrap(): Promise<void> {
     SwaggerModule.setup('api/docs', app, document);
   }
 
-  const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`Backend running on http://localhost:${port}/api`);
   if (process.env.NODE_ENV !== 'production') {
