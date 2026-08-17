@@ -65,15 +65,17 @@ describe('formatCardNumber()', () => {
 
 describe('formatCOP()', () => {
   it('returns a string starting with $', () => {
-    expect(formatCOP(100)).toMatch(/^\$/);
+    expect(formatCOP(62500)).toMatch(/^\$/);
   });
 
-  it('converts cents to pesos (divides by 100)', () => {
-    expect(formatCOP(100)).toContain('1');
+  it('formats 62500 pesos with Colombian thousand-separator', () => {
+    // es-CO usa punto como separador de miles: 62.500
+    expect(formatCOP(62500)).toContain('62');
+    expect(formatCOP(62500)).toContain('500');
   });
 
-  it('rounds to nearest peso', () => {
-    // 150 cents → 2 pesos (Math.round)
-    expect(formatCOP(150)).toContain('2');
+  it('does NOT divide by 100 — value is already in pesos', () => {
+    // 62500 pesos → "$62.500", NOT "$625"
+    expect(formatCOP(62500)).not.toBe('$625');
   });
 });

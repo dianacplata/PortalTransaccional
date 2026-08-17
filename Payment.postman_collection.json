@@ -1,0 +1,73 @@
+{
+	"info": {
+		"_postman_id": "48f11005-0dc7-4b39-8a78-a10241570115",
+		"name": "Payment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "23741233"
+	},
+	"item": [
+		{
+			"name": "ProductsAll",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:3000/api/products"
+			},
+			"response": []
+		},
+		{
+			"name": "ProductID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": ""
+			},
+			"response": []
+		},
+		{
+			"name": "TransactionCreate",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"productId\": \"7ff3350b-09d4-4e01-b597-0f0e8a29c633\",\r\n    \"quantity\": 1,\r\n    \"customer\": {\r\n      \"name\": \"María García\",\r\n      \"email\": \"maria@example.com\",\r\n      \"phone\": \"3001234567\"\r\n    },\r\n    \"delivery\": {\r\n      \"address\": \"Calle 100 # 20-30 Apto 401\",\r\n      \"city\": \"Bogotá\",\r\n      \"department\": \"Cundinamarca\",\r\n      \"postalCode\": \"110111\"\r\n    }\r\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:3000/api/transactions"
+			},
+			"response": []
+		},
+		{
+			"name": "FindTransaction",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:3000/api/transactions/0d17111a-be1f-4f76-8614-2e5161caeee1"
+			},
+			"response": []
+		},
+		{
+			"name": "ProcessPay",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"cardNumber\": \"4242424242424242\",\n    \"cardHolder\": \"MARÍA GARCÍA\",\n    \"expMonth\": \"12\",\n    \"expYear\": \"28\",\n    \"cvc\": \"123\",\n    \"installments\": 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:3000/api/transactions/0d17111a-be1f-4f76-8614-2e5161caeee1/pay"
+			},
+			"response": []
+		}
+	]
+}
