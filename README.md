@@ -1,6 +1,6 @@
 # 🛒 Portal Transaccional
 
-SPA de checkout integrada con la pasarela de pagos **Wompi** (sandbox).  
+SPA de checkout integrada con la pasarela de pagos **Pay** (sandbox).  
 Stack: **React 19 · NestJS · TypeORM · PostgreSQL · Docker Compose**  
 Arquitectura: **Hexagonal (Ports & Adapters) + Railway Oriented Programming (ROP)**
 
@@ -16,7 +16,7 @@ Arquitectura: **Hexagonal (Ports & Adapters) + Railway Oriented Programming (ROP
 
 ---
 
-## 💳 Tarjetas de prueba (Wompi Sandbox)
+## 💳 Tarjetas de prueba (Pay Sandbox)
 
 | Marca | Número | Resultado esperado |
 |-------|--------|--------------------|
@@ -61,7 +61,7 @@ src/
 └── infrastructure/   ← NestJS, TypeORM, Axios
     ├── http/         ← Controllers, ValidationPipe, DomainExceptionFilter
     ├── persistence/  ← PostgresProductRepository, TransactionEntity…
-    └── adapters/pay/ ← PayAdapter (Wompi), PayClient (Axios + SHA-256)
+    └── adapters/pay/ ← PayAdapter (Pay), PayClient (Axios + SHA-256)
 ```
 
 **Railway Oriented Programming:** todos los casos de uso retornan `Promise<Result<T,E>>`. Los errores se propagan sin excepciones hasta el filtro HTTP que los convierte a `4xx/5xx`.
@@ -77,7 +77,7 @@ src/
 | `POST` | `/api/transactions` | Crea transacción en estado `PENDING` |
 | `GET` | `/api/transactions/:id` | Consulta estado de una transacción |
 | `POST` | `/api/transactions/:id/pay` | Procesa el pago (límite: 5 req/min) |
-| `POST` | `/api/webhooks/wompi` | Webhook de confirmación Wompi |
+
 
 ---
 
@@ -102,7 +102,6 @@ Specs incluidos: entidades de dominio, value objects, casos de uso, filtros HTTP
 ### Prerrequisitos
 - Docker + Docker Compose
 - Node.js 20+
-- Claves de Wompi sandbox ([obtener en sandbox.wompi.co](https://sandbox.wompi.co))
 
 ### Con Docker Compose
 
@@ -113,7 +112,7 @@ cd PortalTransaccional
 
 # 2. Configurar variables de entorno
 cp backend/.env.example backend/.env
-# Editar backend/.env con las claves de Wompi
+# Editar backend/.env con las claves
 
 # 3. Levantar los 3 servicios
 docker compose up --build
@@ -148,9 +147,9 @@ Copia `backend/.env.example` a `backend/.env`:
 | Variable | Descripción |
 |----------|-------------|
 | `DATABASE_URL` | Cadena de conexión PostgreSQL |
-| `PAY_BASE_URL` | `https://sandbox.wompi.co/v1` |
-| `PAY_PUBLIC_KEY` | Clave pública Wompi sandbox |
-| `PAY_PRIVATE_KEY` | Clave privada Wompi sandbox |
+| `PAY_BASE_URL` | url sandbox |
+| `PAY_PUBLIC_KEY` | Clave pública  sandbox |
+| `PAY_PRIVATE_KEY` | Clave privada  sandbox |
 | `PAY_INTEGRITY_KEY` | Clave de integridad SHA-256 |
 | `BASE_FEE_CENTS` | Tarifa base en centavos COP (ej: `300000`) |
 | `DELIVERY_FEE_CENTS` | Tarifa de envío en centavos COP (ej: `150000`) |
@@ -165,7 +164,7 @@ Copia `backend/.env.example` a `backend/.env`:
 | Frontend | React 19, Redux Toolkit, React Router, Vite, TypeScript |
 | Backend | NestJS 10, TypeScript, Helmet, Throttler |
 | ORM | TypeORM + PostgreSQL 16 |
-| Pasarela | Wompi (sandbox) — tokenización + webhook |
+| Pasarela | Pay (sandbox) — tokenización + webhook |
 | Contenedores | Docker Compose (db + backend + frontend/nginx) |
 | Tests | Jest (backend) · Vitest + Testing Library (frontend) |
 | CI/CD | AWS EC2 t2.micro — Free Tier |
