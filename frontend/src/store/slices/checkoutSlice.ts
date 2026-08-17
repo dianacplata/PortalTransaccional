@@ -10,6 +10,11 @@ export interface CardData {
 }
 
 export interface DeliveryData {
+  // Datos del cliente (recogidos en el mismo paso)
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  // Datos de envío
   address: string;
   city: string;
   department: string;
@@ -82,7 +87,6 @@ const checkoutSlice = createSlice({
       state.transactionId = action.payload.transactionId;
       state.reference = action.payload.reference;
       state.fees = action.payload.fees;
-      state.step = 5;
     },
 
     goToStep(state, action: PayloadAction<CheckoutStep>) {
