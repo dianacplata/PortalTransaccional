@@ -10,11 +10,17 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: { '@': path.resolve(__dirname, 'src') },
     },
-    // Expone VITE_API_URL como process.env.VITE_API_URL para compatibilidad
-    // con ts-jest que corre en CommonJS y no dispone de import.meta.env
+    // Expone vars de entorno como process.env.* para compatibilidad con
+    // ts-jest que corre en CommonJS y no dispone de import.meta.env
     define: {
       'process.env.VITE_API_URL': JSON.stringify(
         env.VITE_API_URL || 'http://localhost:3000/api',
+      ),
+      'process.env.VITE_BASE_FEE_CENTS': JSON.stringify(
+        env.VITE_BASE_FEE_CENTS || '300000',
+      ),
+      'process.env.VITE_DELIVERY_FEE_CENTS': JSON.stringify(
+        env.VITE_DELIVERY_FEE_CENTS || '150000',
       ),
     },
     server: {
