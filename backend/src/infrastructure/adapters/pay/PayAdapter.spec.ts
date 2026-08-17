@@ -5,10 +5,19 @@ import { CardBrand } from '../../../domain/value-objects/CardBrand';
 import type { PayClient } from './PayClient';
 import type { ConfigService } from '@nestjs/config';
 
-const makeClient = (): jest.Mocked<Pick<PayClient, 'postPublic' | 'postPrivate' | 'getPublic'>> => ({
-  postPublic:  jest.fn(),
-  postPrivate: jest.fn(),
-  getPublic:   jest.fn(),
+const MERCHANT_RESPONSE = {
+  data: {
+    presigned_acceptance: { acceptance_token: 'acc-token-test', permalink: '' },
+    presigned_personal_data_auth: { acceptance_token: 'pda-token-test', permalink: '' },
+  },
+};
+
+const makeClient = (): jest.Mocked<Pick<PayClient, 'postPublic' | 'postPrivate' | 'getPublic' | 'getPublicNoAuth' | 'pubKey'>> => ({
+  postPublic:       jest.fn(),
+  postPrivate:      jest.fn(),
+  getPublic:        jest.fn(),
+  getPublicNoAuth:  jest.fn().mockResolvedValue(MERCHANT_RESPONSE),
+  pubKey:           'pub_stagtest_test',
 });
 
 const makeConfig = (): Partial<jest.Mocked<ConfigService>> => ({

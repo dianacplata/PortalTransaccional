@@ -12,6 +12,11 @@ export class PostgresCustomerRepository implements ICustomerRepository {
     private readonly repo: Repository<CustomerEntity>,
   ) {}
 
+  async findById(id: string): Promise<Customer | null> {
+    const row = await this.repo.findOne({ where: { id } });
+    return row ? this.toDomain(row) : null;
+  }
+
   async findByEmail(email: string): Promise<Customer | null> {
     const row = await this.repo.findOne({ where: { email } });
     return row ? this.toDomain(row) : null;

@@ -1,6 +1,7 @@
-﻿import { Injectable } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import type { AxiosError } from 'axios';
 import {
   IPaymentGateway,
   CardTokenRequest,
@@ -30,8 +31,23 @@ interface PayTransactionResponse {
   };
 }
 
+interface PayMerchantResponse {
+  data: {
+    presigned_acceptance: {
+      acceptance_token: string;
+      permalink: string;
+    };
+    presigned_personal_data_auth: {
+      acceptance_token: string;
+      permalink: string;
+    };
+  };
+}
+
 @Injectable()
 export class PayAdapter implements IPaymentGateway {
+  private readonly logger = new Logger(PayAdapter.name);
+
   constructor(
     private readonly client: PayClient,
     private readonly config: ConfigService,
@@ -67,27 +83,56 @@ export class PayAdapter implements IPaymentGateway {
       request.currency,
     );
 
-    const response = await this.client.postPrivate<PayTransactionResponse>(
-      '/transactions',
-      {
-        amount_in_cents: request.amountInCents,
-        currency: request.currency,
-        signature,
-        customer_email: request.customerEmail,
-        reference: request.reference,
-        payment_method: {
-          type: 'CARD',
-          installments: request.installments,
-          token: request.cardTokenId,
-        },
-      },
+    // Wompi exige acceptance_token en cada transacción
+    const merchant = await this.client.getPublicNoAuth<PayMerchantResponse>(
+      `/merchants/${this.client.pubKey}`,
     );
+    const acceptanceToken =
+      merchant.data.presigned_acceptance.acceptance_token;
+    const personalDataToken =
+      merchant.data.presigned_personal_data_auth?.acceptance_token;
 
-    return {
-      payTransactionId: response.data.id,
-      status: this.mapStatus(response.data.status),
-      reference: response.data.reference,
+    const body: Record<string, unknown> = {
+      amount_in_cents: request.amountInCents,
+      currency: request.currency,
+      signature,
+      customer_email: request.customerEmail,
+      reference: request.reference,
+      acceptance_token: acceptanceToken,
+      payment_method: {
+        type: 'CARD',
+        installments: request.installments,
+        token: request.cardTokenId,
+      },
     };
+
+    if (personalDataToken) {
+      body['personal_data_auth_token'] = personalDataToken;
+    }
+
+    this.logger.debug('createPayment request →', JSON.stringify(body));
+
+    try {
+      const response = await this.client.postPrivate<PayTransactionResponse>(
+        '/transactions',
+        body,
+      );
+
+      this.logger.debug('createPayment response →', JSON.stringify(response));
+
+      return {
+        payTransactionId: response.data.id,
+        status: this.mapStatus(response.data.status),
+        reference: response.data.reference,
+      };
+    } catch (e) {
+      const axiosErr = e as AxiosError;
+      this.logger.error(
+        'createPayment Wompi error →',
+        JSON.stringify(axiosErr.response?.data),
+      );
+      throw e;
+    }
   }
 
   async getTransactionStatus(payTransactionId: string): Promise<TransactionStatus> {

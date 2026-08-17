@@ -36,4 +36,13 @@ export class PayClient {
     });
     return res.data;
   }
+
+  async getPublicNoAuth<T>(path: string): Promise<T> {
+    const res = await this.http.get<T>(path);
+    return res.data;
+  }
+
+  get pubKey(): string {
+    return this.publicKey;
+  }
 }

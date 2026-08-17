@@ -1,4 +1,6 @@
 services:
+
+  # ── Base de datos ────────────────────────────────────────────────────────────
   db:
     image: postgres:16-alpine
     container_name: portal_db
@@ -17,6 +19,7 @@ services:
       timeout: 5s
       retries: 10
 
+  # ── Backend NestJS ───────────────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
@@ -35,7 +38,25 @@ services:
         condition: service_healthy
     command: npm run start:dev
 
-  
+  # ── Frontend Vite (modo desarrollo, hot-reload) ──────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    container_name: portal_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+      - VITE_BASE_FEE_CENTS=300000
+      - VITE_DELIVERY_FEE_CENTS=150000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
 volumes:
   pgdata:
     driver: local

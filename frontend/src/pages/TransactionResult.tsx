@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchTransaction, clearTransaction } from '@/store/slices/transactionSlice';
@@ -7,24 +7,56 @@ import { resetCheckout } from '@/store/slices/checkoutSlice';
 import { Spinner } from '@/components/Spinner';
 import { formatCOP } from '@/utils/card';
 
+const POLL_INTERVAL_MS = 3000;
+
 export default function TransactionResult() {
   const { id }    = useParams<{ id: string }>();
   const dispatch  = useAppDispatch();
   const navigate  = useNavigate();
   const { transaction, loading, error } = useAppSelector(s => s.transaction);
 
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Carga inicial
   useEffect(() => {
     if (id) dispatch(fetchTransaction(id));
     return () => { dispatch(clearTransaction()); };
   }, [id, dispatch]);
 
+  // Polling automático cada 3 s mientras el estado sea PENDING
+  useEffect(() => {
+    const isPending = transaction?.status === 'PENDING';
+
+    if (isPending && id) {
+      // Arranca el intervalo solo si no hay uno activo
+      if (!intervalRef.current) {
+        intervalRef.current = setInterval(() => {
+          dispatch(fetchTransaction(id));
+        }, POLL_INTERVAL_MS);
+      }
+    } else {
+      // Estado final → limpia el intervalo
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [transaction?.status, id, dispatch]);
+
   const handleReturn = () => {
     dispatch(resetCheckout());
-    dispatch(fetchProducts()); // Refresca el stock actualizado
+    dispatch(fetchProducts()); // refresca el stock actualizado
     navigate('/');
   };
 
-  if (loading) return <Spinner />;
+  if (loading && !transaction) return <Spinner />;
 
   return (
     <div className="min-h-dvh bg-gray-50 flex flex-col">
@@ -64,7 +96,7 @@ export default function TransactionResult() {
                 <h2 className="font-bold text-green-700 text-lg">¡Pago aprobado!</h2>
               </div>
               <div className="p-5 space-y-3">
-                <DetailRow label="Referencia"    value={transaction.reference} />
+                <DetailRow label="Referencia"     value={transaction.reference} />
                 <DetailRow label="ID transacción" value={transaction.id} mono />
                 {transaction.payTransactionId && (
                   <DetailRow label="ID pasarela" value={transaction.payTransactionId} mono />
@@ -76,7 +108,7 @@ export default function TransactionResult() {
 
           {/* DECLINED / ERROR / VOIDED */}
           {(transaction?.status === 'DECLINED' ||
-            transaction?.status === 'ERROR' ||
+            transaction?.status === 'ERROR'    ||
             transaction?.status === 'VOIDED') && (
             <>
               <div className="bg-red-50 py-8 flex flex-col items-center gap-2">
@@ -105,19 +137,16 @@ export default function TransactionResult() {
                 <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
               </div>
               <p className="font-semibold text-gray-900 mb-1">Pago en proceso</p>
-              <p className="text-gray-500 text-sm mb-5">
-                Tu pago se está procesando. Puedes refrescar para ver el resultado.
+              <p className="text-gray-500 text-sm mb-1">
+                Verificando el estado de tu pago automáticamente…
               </p>
-              <button
-                onClick={() => id && dispatch(fetchTransaction(id))}
-                className="px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                Refrescar estado
-              </button>
+              <p className="text-gray-400 text-xs">
+                Actualizando cada {POLL_INTERVAL_MS / 1000} segundos
+              </p>
             </div>
           )}
 
-          {/* Botón volver — siempre visible si hay transacción */}
+          {/* Botón volver — visible solo cuando hay estado final */}
           {transaction && transaction.status !== 'PENDING' && (
             <div className="px-5 pb-5">
               <button
@@ -146,9 +175,7 @@ function DetailRow({
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-gray-500">{label}</span>
-      <span
-        className={`text-sm text-gray-900 break-all ${mono ? 'font-mono text-xs' : 'font-medium'}`}
-      >
+      <span className={`text-sm text-gray-900 break-all ${mono ? 'font-mono text-xs' : 'font-medium'}`}>
         {value}
       </span>
     </div>

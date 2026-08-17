@@ -13,10 +13,15 @@ export default function ProductPage() {
   const { items, loading, error } = useAppSelector(s => s.products);
 
   const [confirmProduct, setConfirmProduct] = useState<Product | null>(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch]);
+
+  const filtered = items.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase().trim()),
+  );
 
   const handleConfirm = () => {
     if (!confirmProduct) return;
@@ -31,9 +36,32 @@ export default function ProductPage() {
     <div className="min-h-dvh bg-gray-50">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-2">
-          <span className="text-2xl">🛍️</span>
-          <h1 className="font-bold text-gray-900 text-lg">Tienda</h1>
+        <div className="max-w-2xl mx-auto px-4 py-3 flex flex-col gap-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🛍️</span>
+            <h1 className="font-bold text-gray-900 text-lg">Tienda</h1>
+          </div>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              🔍
+            </span>
+            <input
+              type="search"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar producto…"
+              className="w-full pl-9 pr-4 py-2 text-sm bg-gray-100 rounded-xl border border-transparent focus:border-blue-400 focus:bg-white focus:outline-none transition-colors"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg leading-none"
+                aria-label="Limpiar búsqueda"
+              >
+                ×
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -65,9 +93,26 @@ export default function ProductPage() {
           </div>
         )}
 
+        {/* Sin resultados de búsqueda */}
+        {!error && search && filtered.length === 0 && (
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <span className="text-4xl">🔍</span>
+            <p className="text-gray-500 text-sm">
+              No hay productos que coincidan con{' '}
+              <span className="font-medium text-gray-700">"{search}"</span>.
+            </p>
+            <button
+              onClick={() => setSearch('')}
+              className="px-4 py-2 text-sm text-blue-600 font-medium hover:underline"
+            >
+              Limpiar búsqueda
+            </button>
+          </div>
+        )}
+
         {/* Catálogo */}
         <div className="grid gap-4 sm:grid-cols-2">
-          {items.map(product => (
+          {filtered.map(product => (
             <article
               key={product.id}
               className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col"

@@ -1,6 +1,7 @@
 ﻿import { Inject, Injectable } from '@nestjs/common';
 import { ITransactionRepository, TRANSACTION_REPOSITORY } from '../../domain/ports/ITransactionRepository';
 import { IProductRepository, PRODUCT_REPOSITORY } from '../../domain/ports/IProductRepository';
+import { ICustomerRepository, CUSTOMER_REPOSITORY } from '../../domain/ports/ICustomerRepository';
 import { IPaymentGateway, PAYMENT_GATEWAY } from '../../domain/ports/IPaymentGateway';
 import { TransactionStatus } from '../../domain/value-objects/TransactionStatus';
 import { isValidLuhn } from '../../domain/value-objects/CardBrand';
@@ -23,6 +24,8 @@ export class ProcessPaymentUseCase {
     private readonly transactionRepo: ITransactionRepository,
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepo: IProductRepository,
+    @Inject(CUSTOMER_REPOSITORY)
+    private readonly customerRepo: ICustomerRepository,
     @Inject(PAYMENT_GATEWAY)
     private readonly paymentGateway: IPaymentGateway,
   ) {}
@@ -39,6 +42,9 @@ export class ProcessPaymentUseCase {
 
     if (!isValidLuhn(dto.cardNumber))
       return err(new PaymentException('Invalid card number (Luhn check failed)'));
+
+    const customer = await this.customerRepo.findById(transaction.customerId);
+    if (!customer) return err(new PaymentException('Customer not found for this transaction'));
 
     let cardToken;
     try {
@@ -59,7 +65,7 @@ export class ProcessPaymentUseCase {
         reference: transaction.reference,
         amountInCents: transaction.totalAmount.cents,
         currency: 'COP',
-        customerEmail: '',
+        customerEmail: customer.email,
         cardTokenId: cardToken.id,
         installments: dto.installments,
       });
