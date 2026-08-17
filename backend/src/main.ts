@@ -28,9 +28,11 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalFilters(new DomainExceptionFilter());
 
+  const port = process.env.PORT ?? 3000;
+  const serverUrl = process.env.SERVER_URL ?? `http://localhost:${port}`;
+
   // Swagger — only in non-production environments
   if (process.env.NODE_ENV !== 'production') {
-    const serverUrl = process.env.SERVER_URL ?? `http://localhost:${port}`;
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Portal Transaccional API')
       .setDescription('REST API para el portal de pagos — sandbox Wompi')
@@ -45,7 +47,6 @@ async function bootstrap(): Promise<void> {
     SwaggerModule.setup('api/docs', app, document);
   }
 
-  const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`Backend running on http://localhost:${port}/api`);
   if (process.env.NODE_ENV !== 'production') {
