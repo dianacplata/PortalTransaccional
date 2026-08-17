@@ -1,0 +1,20 @@
+services:
+
+  backend:
+    build:
+      context: ./backend
+      target: prod
+    volumes: []           # sin bind-mount en producción
+    command: node dist/main.js
+
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
+        VITE_BASE_FEE_CENTS: ${VITE_BASE_FEE_CENTS:-300000}
+        VITE_DELIVERY_FEE_CENTS: ${VITE_DELIVERY_FEE_CENTS:-150000}
+    ports:
+      - "80:80"
+    volumes: []           # nginx sirve el build, sin bind-mount
