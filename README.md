@@ -6,6 +6,11 @@ Arquitectura: **Hexagonal (Ports & Adapters) + Railway Oriented Programming (ROP
 
 ---
 
+## Base de datos
+
+<img width="2008" height="1170" alt="portal_transaccional" src="https://github.com/user-attachments/assets/e4d8cd61-089c-4070-a611-394f0a48950b" />
+
+
 ## 🌐 Demo en vivo
 
 | Recurso | URL |
